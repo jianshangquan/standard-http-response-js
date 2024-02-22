@@ -1,4 +1,5 @@
-import { sha256 } from "js-sha256";
+// import { sha256 } from "js-sha256";
+const { sha256 } = require('js-sha256');
 
 const LATEST_API_VERSION = 2;
 
@@ -71,8 +72,6 @@ const HttpResponse = {
         return HttpResponse.success({ type: 'Heart-Beat', type: HttpResponseType.HEART_BEAT });
     }
 }
-
-
 
 
 module.exports = { HttpResponse, HttpResponseType }
