@@ -38,16 +38,18 @@ const HttpResponseType = Object.freeze({
 
 
 const HttpResponse = {
-    error: ({ version = LATEST_API_VERSION,  errorMsg = "", message, statusCode = 400, type = HttpResponseType.ERROR} = {}) => {
+    error: ({ version = LATEST_API_VERSION,  errorMsg = "", message, errorStatus = null, statusCode = 400, type = HttpResponseType.ERROR} = {}) => {
         return {
             status: 'Failed',
             statusCode,
             version,
             type,
             timestamp: new Date(),
-            message: message || errorMsg,
+            message: errorMsg || message,
             error: {
-                errorMessage: errorMsg
+                status: errorStatus,
+                message,
+                errorMessage: errorMsg || message
             },
             payload: null
         }
