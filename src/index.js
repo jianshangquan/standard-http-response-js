@@ -76,4 +76,35 @@ const HttpResponse = {
 }
 
 
-module.exports = { HttpResponse, HttpResponseType }
+const FetchResponse = {
+    async handle(res) {
+        const response = await res.json();
+        if(response.statusCode == 400) throw response.error;
+        return response.payload;
+    }
+}
+
+
+const Fetch = {
+    createFetchOptions({ method = HttpMethods.POST, data } = {}){
+        return {
+            method,
+            body: JSON.stringify(data),
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        }
+    },
+    put(data = {}){
+        return this.createFetchOptions({ method: HttpMethods.PUT, data })
+    },
+    post(data = {}){
+        return this.createFetchOptions({ method: HttpMethods.POST, data })
+    },
+    delete(data = {}){
+        return this.createFetchOptions({ method: HttpMethods.DELETE, data })
+    },
+}
+
+
+module.exports = { HttpResponse, HttpResponseType, FetchResponse, Fetch }
