@@ -37,6 +37,16 @@ const HttpResponseType = Object.freeze({
 })
 
 
+const HttpMethods = Object.freeze({
+    POST: 'POST',
+    PUT: 'PUT',
+    GET: 'GET',
+    DELETE: 'DELETE',
+    OPTION: 'OPTION'
+});
+
+
+
 const HttpResponse = {
     error: ({ version = LATEST_API_VERSION,  errorMsg = "", message, errorStatus = null, statusCode = 400, type = HttpResponseType.ERROR} = {}) => {
         return {
@@ -107,4 +117,4 @@ const Fetch = {
 }
 
 
-module.exports = { HttpResponse, HttpResponseType, FetchResponse, Fetch }
+module.exports = { HttpResponse, HttpResponseType, FetchResponse, Fetch, HttpMethods }
