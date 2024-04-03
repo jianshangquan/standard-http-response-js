@@ -18,7 +18,11 @@ declare const HttpMethods: Readonly<{
     PUT: "PUT";
     GET: "GET";
     DELETE: "DELETE";
-    OPTION: "OPTION";
+    OPTIONS: "OPTIONS";
+    TRACE: "TRACE";
+    PATCH: "PATCH";
+    CONNECT: "CONNECT";
+    HEAD: "HEAD";
 }>;
 declare type HttpMethods = typeof HttpMethods[keyof typeof HttpMethods];
 declare const HttpResponseType: Readonly<{

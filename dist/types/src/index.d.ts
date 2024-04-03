@@ -10,7 +10,11 @@ export declare const HttpMethods: Readonly<{
     PUT: "PUT";
     GET: "GET";
     DELETE: "DELETE";
-    OPTION: "OPTION";
+    OPTIONS: "OPTIONS";
+    TRACE: "TRACE";
+    PATCH: "PATCH";
+    CONNECT: "CONNECT";
+    HEAD: "HEAD";
 }>;
 export declare type HttpResponseObject<T> = {
     status: string;

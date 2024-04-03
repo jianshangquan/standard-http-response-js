@@ -46,7 +46,11 @@ export const HttpMethods = Object.freeze({
     PUT: 'PUT',
     GET: 'GET',
     DELETE: 'DELETE',
-    OPTION: 'OPTION'
+    OPTIONS: 'OPTIONS',
+    TRACE: 'TRACE',
+    PATCH: 'PATCH',
+    CONNECT: 'CONNECT',
+    HEAD: 'HEAD'
 });
 
 
