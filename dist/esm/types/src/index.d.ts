@@ -52,8 +52,12 @@ export declare type HttpResponse = {
     ok: <T>() => HttpResponseObject<T>;
     heartBeat: <T>() => HttpResponseObject<T>;
 };
+export declare interface StandardHttpResponseConstructor {
+    version: string;
+}
 export declare class StandardHttpResponse {
     version: string;
+    constructor(prop: StandardHttpResponseConstructor);
     error<T>({ version, errorMsg, message, errorStatus, statusCode, type }?: {
         version?: string;
         errorMsg?: string;

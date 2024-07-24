@@ -33,8 +33,12 @@ declare const HttpResponseType: Readonly<{
     ERROR: "error";
 }>;
 declare type HttpResponseType = typeof HttpResponseType[keyof typeof HttpResponseType];
+declare interface StandardHttpResponseConstructor {
+    version: string;
+}
 declare class StandardHttpResponse {
     version: string;
+    constructor(prop: StandardHttpResponseConstructor);
     error<T>({ version, errorMsg, message, errorStatus, statusCode, type }?: {
         version?: string;
         errorMsg?: string;
@@ -110,4 +114,4 @@ declare const Fetch: {
     };
 };
 
-export { Fetch, FetchResponse, HttpMethods, HttpResponse, HttpResponseObject, HttpResponseType, StandardHttpResponse, createSign };
+export { Fetch, FetchResponse, HttpMethods, HttpResponse, HttpResponseObject, HttpResponseType, StandardHttpResponse, StandardHttpResponseConstructor, createSign };
