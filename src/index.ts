@@ -85,8 +85,17 @@ export declare type HttpResponse = {
 
 
 
+
+export declare interface StandardHttpResponseConstructor{
+    version: string,
+}
 export class StandardHttpResponse{
     version: string = '1';
+
+    constructor(prop: StandardHttpResponseConstructor){
+        this.version = prop.version;
+    }
+
     error<T>({ version = this.version,  errorMsg = "", message, errorStatus = null, statusCode = 400, type = HttpResponseType.ERROR} : 
         { version?: string, errorMsg?: string, message?: string, errorStatus?: any, statusCode?: number, type?: HttpResponseType  } = {}) : HttpResponseObject<T> {
         return {
