@@ -15,15 +15,15 @@ export default [
     input: 'src/index.ts',
     output: [
       {
-        file: 'dist/index.js',
+        file: 'dist/esm/index.js',
         format: 'esm',
         sourcemap: true,
       },
-      // {
-      //   file: 'dist/cjs/index.js',
-      //   format: 'cjs',
-      //   sourcemap: true,
-      // },
+      {
+        file: 'dist/cjs/index.cjs',
+        format: 'cjs',
+        sourcemap: true,
+      },
     ],
     plugins: [
       // NEW
@@ -38,7 +38,7 @@ export default [
     ],
   },
   {
-    input: 'dist/types/src/index.d.ts',
+    input: 'dist/esm/types/src/index.d.ts',
     output: [{ file: 'dist/index.d.ts', format: 'esm' }],
     plugins: [dts.default()],
     external: [/\.css$/],

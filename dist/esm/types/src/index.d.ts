@@ -1,5 +1,22 @@
-declare function createSign(object?: any, key?: string | undefined): string | null;
-declare type HttpResponseObject<T> = {
+export declare function createSign(object?: any, key?: string | undefined): string | null;
+export declare const HttpResponseType: Readonly<{
+    REQUEST: "request";
+    HEART_BEAT: "heart-beat";
+    OK: "OK";
+    ERROR: "error";
+}>;
+export declare const HttpMethods: Readonly<{
+    POST: "POST";
+    PUT: "PUT";
+    GET: "GET";
+    DELETE: "DELETE";
+    OPTIONS: "OPTIONS";
+    TRACE: "TRACE";
+    PATCH: "PATCH";
+    CONNECT: "CONNECT";
+    HEAD: "HEAD";
+}>;
+export declare type HttpResponseObject<T> = {
     status: string;
     statusCode: number;
     version: string;
@@ -14,26 +31,28 @@ declare type HttpResponseObject<T> = {
     };
     payload: T | null;
 };
-declare const HttpMethods: Readonly<{
-    POST: "POST";
-    PUT: "PUT";
-    GET: "GET";
-    DELETE: "DELETE";
-    OPTIONS: "OPTIONS";
-    TRACE: "TRACE";
-    PATCH: "PATCH";
-    CONNECT: "CONNECT";
-    HEAD: "HEAD";
-}>;
-declare type HttpMethods = typeof HttpMethods[keyof typeof HttpMethods];
-declare const HttpResponseType: Readonly<{
-    REQUEST: "request";
-    HEART_BEAT: "heart-beat";
-    OK: "OK";
-    ERROR: "error";
-}>;
-declare type HttpResponseType = typeof HttpResponseType[keyof typeof HttpResponseType];
-declare class StandardHttpResponse {
+export declare type HttpMethods = typeof HttpMethods[keyof typeof HttpMethods];
+export declare type HttpResponseType = typeof HttpResponseType[keyof typeof HttpResponseType];
+export declare type HttpResponse = {
+    error: <T>(prop: {
+        version?: string;
+        errorMsg?: string;
+        message?: string;
+        errorStatus?: any;
+        statusCode?: number;
+        type?: HttpResponseType;
+    }) => HttpResponseObject<T>;
+    success: <T>(prop: {
+        version?: string;
+        message?: string;
+        payload?: T;
+        statusCode?: number;
+        type?: HttpResponseType;
+    }) => HttpResponseObject<T>;
+    ok: <T>() => HttpResponseObject<T>;
+    heartBeat: <T>() => HttpResponseObject<T>;
+};
+export declare class StandardHttpResponse {
     version: string;
     error<T>({ version, errorMsg, message, errorStatus, statusCode, type }?: {
         version?: string;
@@ -53,30 +72,11 @@ declare class StandardHttpResponse {
     ok<T>(): HttpResponseObject<T>;
     heartBeat<T>(): HttpResponseObject<T>;
 }
-declare type HttpResponse = {
-    error: <T>(prop: {
-        version?: string;
-        errorMsg?: string;
-        message?: string;
-        errorStatus?: any;
-        statusCode?: number;
-        type?: HttpResponseType;
-    }) => HttpResponseObject<T>;
-    success: <T>(prop: {
-        version?: string;
-        message?: string;
-        payload?: T;
-        statusCode?: number;
-        type?: HttpResponseType;
-    }) => HttpResponseObject<T>;
-    ok: <T>() => HttpResponseObject<T>;
-    heartBeat: <T>() => HttpResponseObject<T>;
-};
-declare const HttpResponse: HttpResponse;
-declare const FetchResponse: {
+export declare const HttpResponse: HttpResponse;
+export declare const FetchResponse: {
     handle(res: any): Promise<any>;
 };
-declare const Fetch: {
+export declare const Fetch: {
     createFetchOptions({ method, data }?: {
         method: HttpMethods;
         data: any;
@@ -109,5 +109,3 @@ declare const Fetch: {
         };
     };
 };
-
-export { Fetch, FetchResponse, HttpMethods, HttpResponse, HttpResponseObject, HttpResponseType, StandardHttpResponse, createSign };

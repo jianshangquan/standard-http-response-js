@@ -1,7 +1,7 @@
 // import { sha256 } from "js-sha256";
 import { sha256 } from "js-sha256";
 
-const LATEST_API_VERSION = 2;
+const LATEST_API_VERSION : string = '2';
 
 
 
@@ -62,10 +62,11 @@ export const HttpMethods = Object.freeze({
 export declare type HttpResponseObject<T> = {
     status: string,
     statusCode: number,
-    version: number,
+    version: string,
     type: HttpResponseType,
     timestamp: Date,
     message: string | undefined,
+    signature?: string | null,
     error?: {
         status?: string,
         message?: string,
@@ -76,12 +77,54 @@ export declare type HttpResponseObject<T> = {
 export declare type HttpMethods = typeof HttpMethods[keyof typeof HttpMethods];
 export declare type HttpResponseType = typeof HttpResponseType[keyof typeof HttpResponseType];
 export declare type HttpResponse = {
-    error: <T>(prop: { version?: number, errorMsg?: string, message?: string, errorStatus?: any, statusCode?: number, type?: HttpResponseType  }) => HttpResponseObject<T>,
-    success: <T>(prop: { version?: number, message?: string, payload?: T, statusCode?: number, type?: HttpResponseType }) => HttpResponseObject<T>,
+    error: <T>(prop: { version?: string, errorMsg?: string, message?: string, errorStatus?: any, statusCode?: number, type?: HttpResponseType  }) => HttpResponseObject<T>,
+    success: <T>(prop: { version?: string, message?: string, payload?: T, statusCode?: number, type?: HttpResponseType }) => HttpResponseObject<T>,
     ok: <T>() => HttpResponseObject<T>,
     heartBeat: <T>() => HttpResponseObject<T>
 }
 
+
+
+export class StandardHttpResponse{
+    version: string = '1';
+    error<T>({ version = this.version,  errorMsg = "", message, errorStatus = null, statusCode = 400, type = HttpResponseType.ERROR} : 
+        { version?: string, errorMsg?: string, message?: string, errorStatus?: any, statusCode?: number, type?: HttpResponseType  } = {}) : HttpResponseObject<T> {
+        return {
+            status: 'Failed',
+            statusCode,
+            version,
+            type,
+            timestamp: new Date(),
+            message: errorMsg || message,
+            error: {
+                status: errorStatus,
+                message,
+                errorMessage: errorMsg || message
+            },
+            payload: null
+        }
+    }
+    success<T>({ version = this.version, message =  "", payload = null, statusCode = 200, type = HttpResponseType.REQUEST } : 
+        { version?: string, message?: string, payload?: T | null, statusCode?: number, type?: HttpResponseType } = {}) : HttpResponseObject<T>{
+        const timestamp = new Date();
+        return {
+            status: 'Succeed',
+            statusCode,
+            version,
+            type,
+            timestamp,
+            message,
+            signature: createSign(payload),
+            payload: payload
+        }
+    }
+    ok<T>() : HttpResponseObject<T>{
+        return this.success({ message: 'ok', type: HttpResponseType.OK })
+    }
+    heartBeat<T>() : HttpResponseObject<T>{
+        return this.success({ message: 'Heart-Beat', type: HttpResponseType.HEART_BEAT });
+    }
+}
 
 
 

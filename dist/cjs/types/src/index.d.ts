@@ -19,10 +19,11 @@ export declare const HttpMethods: Readonly<{
 export declare type HttpResponseObject<T> = {
     status: string;
     statusCode: number;
-    version: number;
+    version: string;
     type: HttpResponseType;
     timestamp: Date;
     message: string | undefined;
+    signature?: string | null;
     error?: {
         status?: string;
         message?: string;
@@ -34,7 +35,7 @@ export declare type HttpMethods = typeof HttpMethods[keyof typeof HttpMethods];
 export declare type HttpResponseType = typeof HttpResponseType[keyof typeof HttpResponseType];
 export declare type HttpResponse = {
     error: <T>(prop: {
-        version?: number;
+        version?: string;
         errorMsg?: string;
         message?: string;
         errorStatus?: any;
@@ -42,7 +43,7 @@ export declare type HttpResponse = {
         type?: HttpResponseType;
     }) => HttpResponseObject<T>;
     success: <T>(prop: {
-        version?: number;
+        version?: string;
         message?: string;
         payload?: T;
         statusCode?: number;
@@ -51,6 +52,26 @@ export declare type HttpResponse = {
     ok: <T>() => HttpResponseObject<T>;
     heartBeat: <T>() => HttpResponseObject<T>;
 };
+export declare class StandardHttpResponse {
+    version: string;
+    error<T>({ version, errorMsg, message, errorStatus, statusCode, type }?: {
+        version?: string;
+        errorMsg?: string;
+        message?: string;
+        errorStatus?: any;
+        statusCode?: number;
+        type?: HttpResponseType;
+    }): HttpResponseObject<T>;
+    success<T>({ version, message, payload, statusCode, type }?: {
+        version?: string;
+        message?: string;
+        payload?: T | null;
+        statusCode?: number;
+        type?: HttpResponseType;
+    }): HttpResponseObject<T>;
+    ok<T>(): HttpResponseObject<T>;
+    heartBeat<T>(): HttpResponseObject<T>;
+}
 export declare const HttpResponse: HttpResponse;
 export declare const FetchResponse: {
     handle(res: any): Promise<any>;
