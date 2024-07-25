@@ -61,7 +61,7 @@ export const HttpMethods = Object.freeze({
 
 export declare type HttpResponseObject<T> = {
     status: string,
-    statusCode: number,
+    statusCode: number | string,
     version: string,
     type: HttpResponseType,
     timestamp: Date,
@@ -71,14 +71,15 @@ export declare type HttpResponseObject<T> = {
         status?: string,
         message?: string,
         errorMessage?: string,
+        errorCode?: number | string
     },
     payload: T | null
 }
 export declare type HttpMethods = typeof HttpMethods[keyof typeof HttpMethods];
 export declare type HttpResponseType = typeof HttpResponseType[keyof typeof HttpResponseType];
 export declare type HttpResponse = {
-    error: <T>(prop: { version?: string, errorMsg?: string, message?: string, errorStatus?: any, statusCode?: number, type?: HttpResponseType  }) => HttpResponseObject<T>,
-    success: <T>(prop: { version?: string, message?: string, payload?: T, statusCode?: number, type?: HttpResponseType }) => HttpResponseObject<T>,
+    error: <T>(prop: { version?: string, errorMsg?: string, message?: string, errorStatus?: any, errorCode?: number | string, statusCode?: number | string, type?: HttpResponseType  }) => HttpResponseObject<T>,
+    success: <T>(prop: { version?: string, message?: string, payload?: T, statusCode?: number | string, type?: HttpResponseType }) => HttpResponseObject<T>,
     ok: <T>() => HttpResponseObject<T>,
     heartBeat: <T>() => HttpResponseObject<T>
 }
@@ -96,8 +97,8 @@ export class StandardHttpResponse{
         this.version = prop.version;
     }
 
-    error<T>({ version = this.version,  errorMsg = "", message, errorStatus = null, statusCode = 400, type = HttpResponseType.ERROR} : 
-        { version?: string, errorMsg?: string, message?: string, errorStatus?: any, statusCode?: number, type?: HttpResponseType  } = {}) : HttpResponseObject<T> {
+    error<T>({ version = this.version,  errorMsg = "", message, errorStatus = null, errorCode, statusCode = 400, type = HttpResponseType.ERROR} : 
+        { version?: string, errorMsg?: string, message?: string, errorStatus?: any, errorCode?: number | string, statusCode?: number | string, type?: HttpResponseType  } = {}) : HttpResponseObject<T> {
         return {
             status: 'Failed',
             statusCode,
@@ -106,6 +107,7 @@ export class StandardHttpResponse{
             timestamp: new Date(),
             message: errorMsg || message,
             error: {
+                errorCode,
                 status: errorStatus,
                 message,
                 errorMessage: errorMsg || message
@@ -114,7 +116,7 @@ export class StandardHttpResponse{
         }
     }
     success<T>({ version = this.version, message =  "", payload = null, statusCode = 200, type = HttpResponseType.REQUEST } : 
-        { version?: string, message?: string, payload?: T | null, statusCode?: number, type?: HttpResponseType } = {}) : HttpResponseObject<T>{
+        { version?: string, message?: string, payload?: T | null, statusCode?: number | string, type?: HttpResponseType } = {}) : HttpResponseObject<T>{
         const timestamp = new Date();
         return {
             status: 'Succeed',
@@ -138,7 +140,7 @@ export class StandardHttpResponse{
 
 
 export const HttpResponse : HttpResponse = {
-    error: ({ version = LATEST_API_VERSION,  errorMsg = "", message, errorStatus = null, statusCode = 400, type = HttpResponseType.ERROR} = {}) => {
+    error: ({ version = LATEST_API_VERSION,  errorMsg = "", message, errorStatus = null, errorCode, statusCode = 400, type = HttpResponseType.ERROR} = {}) => {
         return {
             status: 'Failed',
             statusCode,
@@ -147,6 +149,7 @@ export const HttpResponse : HttpResponse = {
             timestamp: new Date(),
             message: errorMsg || message,
             error: {
+                errorCode,
                 status: errorStatus,
                 message,
                 errorMessage: errorMsg || message

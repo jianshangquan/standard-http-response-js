@@ -18,7 +18,7 @@ export declare const HttpMethods: Readonly<{
 }>;
 export declare type HttpResponseObject<T> = {
     status: string;
-    statusCode: number;
+    statusCode: number | string;
     version: string;
     type: HttpResponseType;
     timestamp: Date;
@@ -28,6 +28,7 @@ export declare type HttpResponseObject<T> = {
         status?: string;
         message?: string;
         errorMessage?: string;
+        errorCode?: number | string;
     };
     payload: T | null;
 };
@@ -39,14 +40,15 @@ export declare type HttpResponse = {
         errorMsg?: string;
         message?: string;
         errorStatus?: any;
-        statusCode?: number;
+        errorCode?: number | string;
+        statusCode?: number | string;
         type?: HttpResponseType;
     }) => HttpResponseObject<T>;
     success: <T>(prop: {
         version?: string;
         message?: string;
         payload?: T;
-        statusCode?: number;
+        statusCode?: number | string;
         type?: HttpResponseType;
     }) => HttpResponseObject<T>;
     ok: <T>() => HttpResponseObject<T>;
@@ -58,19 +60,20 @@ export declare interface StandardHttpResponseConstructor {
 export declare class StandardHttpResponse {
     version: string;
     constructor(prop: StandardHttpResponseConstructor);
-    error<T>({ version, errorMsg, message, errorStatus, statusCode, type }?: {
+    error<T>({ version, errorMsg, message, errorStatus, errorCode, statusCode, type }?: {
         version?: string;
         errorMsg?: string;
         message?: string;
         errorStatus?: any;
-        statusCode?: number;
+        errorCode?: number | string;
+        statusCode?: number | string;
         type?: HttpResponseType;
     }): HttpResponseObject<T>;
     success<T>({ version, message, payload, statusCode, type }?: {
         version?: string;
         message?: string;
         payload?: T | null;
-        statusCode?: number;
+        statusCode?: number | string;
         type?: HttpResponseType;
     }): HttpResponseObject<T>;
     ok<T>(): HttpResponseObject<T>;
