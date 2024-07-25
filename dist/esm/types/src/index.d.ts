@@ -82,6 +82,7 @@ export declare class StandardHttpResponse {
 export declare const HttpResponse: HttpResponse;
 export declare const FetchResponse: {
     handle(res: any): Promise<any>;
+    handleWithCustomErrorCode(statusCode: string | null | number): Promise<(res: any) => Promise<any>>;
 };
 export declare const Fetch: {
     createFetchOptions({ method, data }?: {

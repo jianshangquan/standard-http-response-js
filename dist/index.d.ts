@@ -82,6 +82,7 @@ declare type HttpResponse = {
 declare const HttpResponse: HttpResponse;
 declare const FetchResponse: {
     handle(res: any): Promise<any>;
+    handleWithCustomErrorCode(statusCode: string | null | number): Promise<(res: any) => Promise<any>>;
 };
 declare const Fetch: {
     createFetchOptions({ method, data }?: {

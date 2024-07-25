@@ -184,6 +184,13 @@ export const FetchResponse = {
         const response = await res.json();
         if(response.statusCode == 400) throw response.error;
         return response.payload;
+    },
+    async handleWithCustomErrorCode(statusCode: string | null | number){
+        return async (res: any) => {
+            const response = await res.json();
+            if(response.statusCode == statusCode) throw response.error;
+            return response.payload;
+        }
     }
 }
 
