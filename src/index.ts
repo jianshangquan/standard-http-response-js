@@ -1,7 +1,7 @@
 // import { sha256 } from "js-sha256";
 import { sha256 } from "js-sha256";
 
-const LATEST_API_VERSION : string = '2';
+const LATEST_API_VERSION: string = '2';
 
 
 
@@ -9,14 +9,14 @@ const LATEST_API_VERSION : string = '2';
 
 export function createSign(object: any = {}, key?: string | null | undefined) {
 
-    if(object == null) return '';
+    if (object == null) return '';
 
     function extract(ob: any) {
         let keymap: any[] = [];
         const entries = Object.entries(ob);
         entries.map(([k, v], i) => {
-            if(typeof v == 'object' && v != null && v != undefined){
-                return keymap = keymap.concat(extract(v))           
+            if (typeof v == 'object' && v != null && v != undefined) {
+                return keymap = keymap.concat(extract(v))
             }
             keymap.push({ key: k, value: v })
         })
@@ -26,14 +26,14 @@ export function createSign(object: any = {}, key?: string | null | undefined) {
 
 
     const mapping = extract(object);
-    if(mapping.length == 0) return null;
+    if (mapping.length == 0) return null;
 
     const string = JSON.stringify(mapping.sort((a, b) => a.key.localeCompare(b.key)));
     return sha256(`${string}|key=${key}`).toUpperCase()
 }
 
 
-export function checkSign({payload, key, signature} : { payload: object | any, key: string | null, signature: string }) : boolean{
+export function checkSign({ payload, key, signature }: { payload: object | any, key: string | null, signature: string }): boolean {
     const createdSign = createSign(payload, key);
     return createdSign == signature;
 }
@@ -84,7 +84,7 @@ export declare type HttpResponseObject<T> = {
 export declare type HttpMethods = typeof HttpMethods[keyof typeof HttpMethods];
 export declare type HttpResponseType = typeof HttpResponseType[keyof typeof HttpResponseType];
 export declare type HttpResponse = {
-    error: <T>(prop: { version?: string, errorMsg?: string, message?: string, errorStatus?: any, errorCode?: number | string, statusCode?: number | string, type?: HttpResponseType  }) => HttpResponseObject<T>,
+    error: <T>(prop: { version?: string, errorMsg?: string, message?: string, errorStatus?: any, errorCode?: number | string, statusCode?: number | string, type?: HttpResponseType }) => HttpResponseObject<T>,
     success: <T>(prop: { version?: string, message?: string, payload?: T, statusCode?: number | string, type?: HttpResponseType }) => HttpResponseObject<T>,
     ok: <T>() => HttpResponseObject<T>,
     heartBeat: <T>() => HttpResponseObject<T>
@@ -98,21 +98,43 @@ export declare type HttpRequestObject = {
 
 
 
-export declare interface StandardHttpResponseConstructor{
+export declare interface StandardHttpResponseConstructor {
     version: string,
-    secretKey: string | null 
+    secretKey: string | null
 }
-export class StandardHttpResponse{
+export class StandardHttpResponse {
     version: string = '1';
     secretKey: string | null = null;
 
-    constructor(prop: StandardHttpResponseConstructor){
+    constructor(prop: StandardHttpResponseConstructor) {
         this.version = prop.version;
         this.secretKey = this.secretKey;
     }
 
-    error<T>({ version = this.version,  errorMsg = "", message, errorStatus = null, errorCode, statusCode = 400, type = HttpResponseType.ERROR} : 
-        { version?: string, errorMsg?: string, message?: string, errorStatus?: any, errorCode?: number | string, statusCode?: number | string, type?: HttpResponseType  } = {}) : HttpResponseObject<T> {
+    check<T>(object: HttpResponseObject<T>) {
+        const checkSignResult = checkSign({
+            payload: object.payload,
+            key: this.secretKey,
+            signature: object.signature || '',
+        })
+        return checkSignResult;
+    }
+
+    async handle<T>(response: any) {
+        return await this.handleWithCustomErrorCode<T>(400)(response);
+    }
+
+    handleWithCustomErrorCode<T>(statusCode: string | null | number) {
+        return async (res: any) => {
+            const response = await res.json() as HttpResponseObject<T>;
+            if (!this.check(response)) throw new Error("INVALID VERSION OR SIGNATURE");
+            if (response.statusCode == statusCode) throw response.error;
+            return response.payload;
+        }
+    }
+
+    error<T>({ version = this.version, errorMsg = "", message, errorStatus = null, errorCode, statusCode = 400, type = HttpResponseType.ERROR }:
+        { version?: string, errorMsg?: string, message?: string, errorStatus?: any, errorCode?: number | string, statusCode?: number | string, type?: HttpResponseType } = {}): HttpResponseObject<T> {
         return {
             status: 'Failed',
             statusCode,
@@ -129,8 +151,8 @@ export class StandardHttpResponse{
             payload: null
         }
     }
-    success<T>({ version = this.version, message =  "", payload = null, statusCode = 200, type = HttpResponseType.REQUEST } : 
-        { version?: string, message?: string, payload?: T | null, statusCode?: number | string, type?: HttpResponseType } = {}) : HttpResponseObject<T>{
+    success<T>({ version = this.version, message = "", payload = null, statusCode = 200, type = HttpResponseType.REQUEST }:
+        { version?: string, message?: string, payload?: T | null, statusCode?: number | string, type?: HttpResponseType } = {}): HttpResponseObject<T> {
         const timestamp = new Date();
         return {
             status: 'Succeed',
@@ -143,30 +165,30 @@ export class StandardHttpResponse{
             payload: payload
         }
     }
-    ok<T>() : HttpResponseObject<T>{
+    ok<T>(): HttpResponseObject<T> {
         return this.success({ message: 'ok', type: HttpResponseType.OK })
     }
-    heartBeat<T>() : HttpResponseObject<T>{
+    heartBeat<T>(): HttpResponseObject<T> {
         return this.success({ message: 'Heart-Beat', type: HttpResponseType.HEART_BEAT });
     }
 }
 
 
 
-export declare interface StandardHttpRequestConstructor{
+export declare interface StandardHttpRequestConstructor {
     version: string,
-    secretKey: string | null 
+    secretKey: string | null
 }
-export class StandardHttpRequest{
+export class StandardHttpRequest {
     version: string = '1';
     secretKey: string | null = null;
 
-    constructor({ version = '1', secretKey }: StandardHttpRequestConstructor){
+    constructor({ version = '1', secretKey }: StandardHttpRequestConstructor) {
         this.version = version;
         this.secretKey = secretKey;
     }
 
-    request(payload: object | any): HttpRequestObject{
+    request(payload: object | any): HttpRequestObject {
         const signature = createSign(payload, this.secretKey);
         return {
             version: this.version,
@@ -176,39 +198,39 @@ export class StandardHttpRequest{
         }
     }
 
-    check(requestObject: HttpRequestObject | object) : HttpRequestObject | object{
-        if(this.isValid(requestObject)){
+    check(requestObject: HttpRequestObject | object): HttpRequestObject | object {
+        if (this.isValid(requestObject)) {
             return requestObject;
         }
         throw new Error("[STANDARD-HTTP-REQUEST]: INVALID REQUEST OBJECT WITH SIGNATURE")
     }
 
 
-    parse(requestObject: HttpRequestObject) : object | null{
-        if(this.isValid(requestObject)){
+    parse(requestObject: HttpRequestObject): object | null {
+        if (this.isValid(requestObject)) {
             return requestObject.payload;
         }
         return null;
     }
 
 
-    tryParse(requestObject: HttpRequestObject) : object | null{
-        if(this.isValid(requestObject)){
+    tryParse(requestObject: HttpRequestObject): object | null {
+        if (this.isValid(requestObject)) {
             return requestObject.payload;
         }
         throw new Error("[STANDARD-HTTP-REQUEST]: INVALID REQUEST OBJECT WITH SIGNATURE")
     }
 
 
-    isValid(requestObject: HttpRequestObject | object, signature: string | null | undefined = this.secretKey) : boolean{
-        if(this.#isHttpRequestObject(requestObject)){
-            if(this.version != requestObject.version) return false;
-            return checkSign({ 
-                payload: requestObject.payload, 
+    isValid(requestObject: HttpRequestObject | object, signature: string | null | undefined = this.secretKey): boolean {
+        if (this.#isHttpRequestObject(requestObject)) {
+            if (this.version != requestObject.version) return false;
+            return checkSign({
+                payload: requestObject.payload,
                 key: this.secretKey,
                 signature: requestObject.signature || signature || ''
             });
-        }else{
+        } else {
             return checkSign({
                 payload: requestObject,
                 key: this.secretKey,
@@ -231,8 +253,8 @@ export class StandardHttpRequest{
 
 
 
-export const HttpResponse : HttpResponse = {
-    error: ({ version = LATEST_API_VERSION,  errorMsg = "", message, errorStatus = null, errorCode, statusCode = 400, type = HttpResponseType.ERROR} = {}) => {
+export const HttpResponse: HttpResponse = {
+    error: ({ version = LATEST_API_VERSION, errorMsg = "", message, errorStatus = null, errorCode, statusCode = 400, type = HttpResponseType.ERROR } = {}) => {
         return {
             status: 'Failed',
             statusCode,
@@ -249,7 +271,7 @@ export const HttpResponse : HttpResponse = {
             payload: null
         }
     },
-    success: ({ version = LATEST_API_VERSION, message =  "", payload = null, statusCode = 200, type = HttpResponseType.REQUEST } = {}) => {
+    success: ({ version = LATEST_API_VERSION, message = "", payload = null, statusCode = 200, type = HttpResponseType.REQUEST } = {}) => {
         const timestamp = new Date();
         return {
             status: 'Succeed',
@@ -262,10 +284,10 @@ export const HttpResponse : HttpResponse = {
             payload: payload
         }
     },
-    ok(){
+    ok() {
         return HttpResponse.success({ message: 'ok', type: HttpResponseType.OK })
     },
-    heartBeat(){
+    heartBeat() {
         return HttpResponse.success({ message: 'Heart-Beat', type: HttpResponseType.HEART_BEAT });
     }
 }
@@ -274,13 +296,13 @@ export const HttpResponse : HttpResponse = {
 export const FetchResponse = {
     async handle(res: any) {
         const response = await res.json();
-        if(response.statusCode == 400) throw response.error;
+        if (response.statusCode == 400) throw response.error;
         return response.payload;
     },
-    async handleWithCustomErrorCode(statusCode: string | null | number){
+    async handleWithCustomErrorCode(statusCode: string | null | number) {
         return async (res: any) => {
             const response = await res.json();
-            if(response.statusCode == statusCode) throw response.error;
+            if (response.statusCode == statusCode) throw response.error;
             return response.payload;
         }
     }
@@ -288,7 +310,7 @@ export const FetchResponse = {
 
 
 export const Fetch = {
-    createFetchOptions({ method, data }: { method: HttpMethods, data: any } = { method: HttpMethods.POST, data: {} }){
+    createFetchOptions({ method, data }: { method: HttpMethods, data: any } = { method: HttpMethods.POST, data: {} }) {
         return {
             method,
             body: JSON.stringify(data),
@@ -297,13 +319,13 @@ export const Fetch = {
             }
         }
     },
-    put(data: any = {}){
+    put(data: any = {}) {
         return this.createFetchOptions({ method: HttpMethods.PUT, data })
     },
-    post(data: any = {}){
+    post(data: any = {}) {
         return this.createFetchOptions({ method: HttpMethods.POST, data })
     },
-    delete(data: any = {}){
+    delete(data: any = {}) {
         return this.createFetchOptions({ method: HttpMethods.DELETE, data })
     },
 }

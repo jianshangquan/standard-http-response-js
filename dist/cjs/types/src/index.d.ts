@@ -73,6 +73,9 @@ export declare class StandardHttpResponse {
     version: string;
     secretKey: string | null;
     constructor(prop: StandardHttpResponseConstructor);
+    check<T>(object: HttpResponseObject<T>): boolean;
+    handle<T>(response: any): Promise<T | null>;
+    handleWithCustomErrorCode<T>(statusCode: string | null | number): (res: any) => Promise<T | null>;
     error<T>({ version, errorMsg, message, errorStatus, errorCode, statusCode, type }?: {
         version?: string;
         errorMsg?: string;
