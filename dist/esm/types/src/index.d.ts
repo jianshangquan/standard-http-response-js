@@ -1,4 +1,9 @@
-export declare function createSign(object?: any, key?: string | undefined): string | null;
+export declare function createSign(object?: any, key?: string | null | undefined): string | null;
+export declare function checkSign({ payload, key, signature }: {
+    payload: object | any;
+    key: string | null;
+    signature: string;
+}): boolean;
 export declare const HttpResponseType: Readonly<{
     REQUEST: "request";
     HEART_BEAT: "heart-beat";
@@ -54,11 +59,19 @@ export declare type HttpResponse = {
     ok: <T>() => HttpResponseObject<T>;
     heartBeat: <T>() => HttpResponseObject<T>;
 };
+export declare type HttpRequestObject = {
+    version: string;
+    timestamp: Date;
+    signature: string | null;
+    payload: object | null | any;
+};
 export declare interface StandardHttpResponseConstructor {
     version: string;
+    secretKey: string | null;
 }
 export declare class StandardHttpResponse {
     version: string;
+    secretKey: string | null;
     constructor(prop: StandardHttpResponseConstructor);
     error<T>({ version, errorMsg, message, errorStatus, errorCode, statusCode, type }?: {
         version?: string;
@@ -78,6 +91,21 @@ export declare class StandardHttpResponse {
     }): HttpResponseObject<T>;
     ok<T>(): HttpResponseObject<T>;
     heartBeat<T>(): HttpResponseObject<T>;
+}
+export declare interface StandardHttpRequestConstructor {
+    version: string;
+    secretKey: string | null;
+}
+export declare class StandardHttpRequest {
+    #private;
+    version: string;
+    secretKey: string | null;
+    constructor({ version, secretKey }: StandardHttpRequestConstructor);
+    request(payload: object | any): HttpRequestObject;
+    check(requestObject: HttpRequestObject | object): HttpRequestObject | object;
+    parse(requestObject: HttpRequestObject): object | null;
+    tryParse(requestObject: HttpRequestObject): object | null;
+    isValid(requestObject: HttpRequestObject | object, signature?: string | null | undefined): boolean;
 }
 export declare const HttpResponse: HttpResponse;
 export declare const FetchResponse: {

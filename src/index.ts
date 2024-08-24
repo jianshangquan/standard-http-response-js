@@ -7,7 +7,7 @@ const LATEST_API_VERSION : string = '2';
 
 
 
-export function createSign(object: any = {}, key?: string | undefined) {
+export function createSign(object: any = {}, key?: string | null | undefined) {
 
     if(object == null) return '';
 
@@ -30,6 +30,12 @@ export function createSign(object: any = {}, key?: string | undefined) {
 
     const string = JSON.stringify(mapping.sort((a, b) => a.key.localeCompare(b.key)));
     return sha256(`${string}|key=${key}`).toUpperCase()
+}
+
+
+export function checkSign({payload, key, signature} : { payload: object | any, key: string | null, signature: string }) : boolean{
+    const createdSign = createSign(payload, key);
+    return createdSign == signature;
 }
 
 
@@ -83,18 +89,26 @@ export declare type HttpResponse = {
     ok: <T>() => HttpResponseObject<T>,
     heartBeat: <T>() => HttpResponseObject<T>
 }
-
+export declare type HttpRequestObject = {
+    version: string,
+    timestamp: Date,
+    signature: string | null,
+    payload: object | null | any
+}
 
 
 
 export declare interface StandardHttpResponseConstructor{
     version: string,
+    secretKey: string | null 
 }
 export class StandardHttpResponse{
     version: string = '1';
+    secretKey: string | null = null;
 
     constructor(prop: StandardHttpResponseConstructor){
         this.version = prop.version;
+        this.secretKey = this.secretKey;
     }
 
     error<T>({ version = this.version,  errorMsg = "", message, errorStatus = null, errorCode, statusCode = 400, type = HttpResponseType.ERROR} : 
@@ -125,7 +139,7 @@ export class StandardHttpResponse{
             type,
             timestamp,
             message,
-            signature: createSign(payload),
+            signature: createSign(payload, this.secretKey),
             payload: payload
         }
     }
@@ -134,6 +148,84 @@ export class StandardHttpResponse{
     }
     heartBeat<T>() : HttpResponseObject<T>{
         return this.success({ message: 'Heart-Beat', type: HttpResponseType.HEART_BEAT });
+    }
+}
+
+
+
+export declare interface StandardHttpRequestConstructor{
+    version: string,
+    secretKey: string | null 
+}
+export class StandardHttpRequest{
+    version: string = '1';
+    secretKey: string | null = null;
+
+    constructor({ version = '1', secretKey }: StandardHttpRequestConstructor){
+        this.version = version;
+        this.secretKey = secretKey;
+    }
+
+    request(payload: object | any): HttpRequestObject{
+        const signature = createSign(payload, this.secretKey);
+        return {
+            version: this.version,
+            timestamp: new Date(),
+            signature: signature,
+            payload: payload
+        }
+    }
+
+    check(requestObject: HttpRequestObject | object) : HttpRequestObject | object{
+        if(this.isValid(requestObject)){
+            return requestObject;
+        }
+        throw new Error("[STANDARD-HTTP-REQUEST]: INVALID REQUEST OBJECT WITH SIGNATURE")
+    }
+
+
+    parse(requestObject: HttpRequestObject) : object | null{
+        if(this.isValid(requestObject)){
+            return requestObject.payload;
+        }
+        return null;
+    }
+
+
+    tryParse(requestObject: HttpRequestObject) : object | null{
+        if(this.isValid(requestObject)){
+            return requestObject.payload;
+        }
+        throw new Error("[STANDARD-HTTP-REQUEST]: INVALID REQUEST OBJECT WITH SIGNATURE")
+    }
+
+
+    isValid(requestObject: HttpRequestObject | object, signature: string | null | undefined = this.secretKey) : boolean{
+        if(this.#isHttpRequestObject(requestObject)){
+            if(this.version != requestObject.version) return false;
+            return checkSign({ 
+                payload: requestObject.payload, 
+                key: this.secretKey,
+                signature: requestObject.signature || signature || ''
+            });
+        }else{
+            return checkSign({
+                payload: requestObject,
+                key: this.secretKey,
+                signature: signature || ''
+            })
+        }
+    }
+
+    #isHttpRequestObject(ob: any): ob is HttpRequestObject {
+        return (
+            typeof ob === "object" &&
+            ob !== null &&
+            typeof ob.version === "string" &&
+            ob.timestamp instanceof Date &&
+            (typeof ob.signature === "string" || ob.signature === null) &&
+            (typeof ob.payload === "object" || ob.payload === null || ob.payload !== undefined)
+        );
     }
 }
 

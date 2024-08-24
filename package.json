@@ -1,6 +1,6 @@
 {
   "name": "standard-http-response-js",
-  "version": "1.4.3",
+  "version": "1.5.0",
   "description": "",
   "type": "module",
   "main": "./dist/cjs/index.cjs",
@@ -33,8 +33,5 @@
   },
   "peerDependencies": {
     "js-sha256": "^0.11.0"
-  },
-  "dependencies": {
-    "standard-http-response-js": "^1.2.0"
   }
 }

@@ -1,4 +1,9 @@
-declare function createSign(object?: any, key?: string | undefined): string | null;
+declare function createSign(object?: any, key?: string | null | undefined): string | null;
+declare function checkSign({ payload, key, signature }: {
+    payload: object | any;
+    key: string | null;
+    signature: string;
+}): boolean;
 declare type HttpResponseObject<T> = {
     status: string;
     statusCode: number | string;
@@ -34,11 +39,19 @@ declare const HttpResponseType: Readonly<{
     ERROR: "error";
 }>;
 declare type HttpResponseType = typeof HttpResponseType[keyof typeof HttpResponseType];
+declare type HttpRequestObject = {
+    version: string;
+    timestamp: Date;
+    signature: string | null;
+    payload: object | null | any;
+};
 declare interface StandardHttpResponseConstructor {
     version: string;
+    secretKey: string | null;
 }
 declare class StandardHttpResponse {
     version: string;
+    secretKey: string | null;
     constructor(prop: StandardHttpResponseConstructor);
     error<T>({ version, errorMsg, message, errorStatus, errorCode, statusCode, type }?: {
         version?: string;
@@ -58,6 +71,21 @@ declare class StandardHttpResponse {
     }): HttpResponseObject<T>;
     ok<T>(): HttpResponseObject<T>;
     heartBeat<T>(): HttpResponseObject<T>;
+}
+declare interface StandardHttpRequestConstructor {
+    version: string;
+    secretKey: string | null;
+}
+declare class StandardHttpRequest {
+    #private;
+    version: string;
+    secretKey: string | null;
+    constructor({ version, secretKey }: StandardHttpRequestConstructor);
+    request(payload: object | any): HttpRequestObject;
+    check(requestObject: HttpRequestObject | object): HttpRequestObject | object;
+    parse(requestObject: HttpRequestObject): object | null;
+    tryParse(requestObject: HttpRequestObject): object | null;
+    isValid(requestObject: HttpRequestObject | object, signature?: string | null | undefined): boolean;
 }
 declare type HttpResponse = {
     error: <T>(prop: {
@@ -118,4 +146,4 @@ declare const Fetch: {
     };
 };
 
-export { Fetch, FetchResponse, HttpMethods, HttpResponse, HttpResponseObject, HttpResponseType, StandardHttpResponse, StandardHttpResponseConstructor, createSign };
+export { Fetch, FetchResponse, HttpMethods, HttpRequestObject, HttpResponse, HttpResponseObject, HttpResponseType, StandardHttpRequest, StandardHttpRequestConstructor, StandardHttpResponse, StandardHttpResponseConstructor, checkSign, createSign };
